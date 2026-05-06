@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phishbusters — Security Awareness Platform</title>
+  <meta name="description" content="Phishbusters: Phishing simulation, security training, and expert Q&A for MSPs and security teams." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+  <style>
+    /* ── Reset & Tokens ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-background-primary:   #ffffff;
+      --color-background-secondary: #f4f6f9;
+      --color-background-tertiary:  #eef0f4;
+      --color-text-primary:   #111827;
+      --color-text-secondary: #6b7280;
+      --color-text-tertiary:  #9ca3af;
+      --color-border-secondary: rgba(0,0,0,.14);
+      --color-border-tertiary:  rgba(0,0,0,.08);
+      --navy:  #1F3569;
+      --blue:  #1D81C4;
+      --teal:  #2A9B99;
+      --cyan:  #61C5DD;
+      --amber: #BA7517;
+      --red:   #E24B4A;
+    }
+
+    /* ── Base ───────────────────────────────────────────────────────── */
+    body {
+      font-family: 'Barlow', sans-serif;
+      color: var(--color-text-primary);
+      background: var(--color-background-tertiary);
+      min-height: 100vh;
+    }
+
+    /* ── Nav ────────────────────────────────────────────────────────── */
+    .nav {
+      background: var(--navy);
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      height: 56px;
+      gap: 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 2rem;
+      flex-shrink: 0;
+      text-decoration: none;
+    }
+    .nav-logo-text {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--cyan);
+      letter-spacing: .5px;
+    }
+    .nav-item {
+      padding: 0 14px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,.55);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: color .15s;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .nav-item:hover  { color: rgba(255,255,255,.85); }
+    .nav-item.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+    .nav-space { flex: 1; }
+    .nav-cta {
+      background: var(--blue);
+      color: white;
+      border: none;
+      padding: 7px 15px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+      white-space: nowrap;
+      transition: background .15s, color .15s;
+    }
+    .nav-cta:hover { background: var(--cyan); color: var(--navy); }
+
+    /* ── Pages ──────────────────────────────────────────────────────── */
+    .page { display: none; animation: fadeIn .2s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Page Header ────────────────────────────────────────────────── */
+    .ph { background: var(--navy); padding: 1.5rem 1.5rem 0; }
+    .ph-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .pg-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 4px;
+    }
+    .pg-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+    }
+    .pg-tabs { display: flex; }
+    .pg-tab {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,.5);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+    }
+    .pg-tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+    /* ── Content wrapper ────────────────────────────────────────────── */
+    .content {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 1.25rem 1.5rem 2rem;
+    }
+
+    /* ── Grid helpers ───────────────────────────────────────────────── */
+    .grid4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 1.25rem;
+    }
+    .col2 {
+      display: grid;
+      grid-template-columns: minmax(0,1.6fr) minmax(0,1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .col2r {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) minmax(0,1.5fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* ── Metric cards ───────────────────────────────────────────────── */
+    .mcard {
+      background: var(--color-background-primary);
+      border: .5px solid var(--color-border-tertiary);
+      border-radius: 10px;
+      padding: .875rem 1rem;
+    }
+    .mcard-lbl   { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 3px; }
+    .mcard-val   { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; }
+    .mcard-val.blue  { color: var(--blue);  }
+    .mcard-val.teal  { color: var(--teal);  }
+    .mcard-val.navy  { color: var(--navy);  }
+    .mcard-val.amber { color: var(--amber); }
+    .mcard-delta      { font-size: 11px; color: var(--teal);  margin-top: 2px; }
+    .mcard-delta.neg  { color: var(--amber); }
+
+    /* ── Panels ─────────────────────────────────────────────────────── */
+    .panel {
+      background: var(--color-background-primary);
+      border: .5px solid var(--color-border-tertiary);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .panel:last-child { margin-bottom: 0; }
+    .phdr {
+      padding: .75rem 1.25rem;
+      border-bottom: .5px solid var(--color-border-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .phdr-title  { font-size: 13px; font-weight: 600; }
+    .phdr-action {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--blue);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+      padding: 0;
+    }
+    .pb { padding: .875rem 1.25rem; }
+
+    /* ── Badges ─────────────────────────────────────────────────────── */
+    .bdg {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .bdg.active    { background: rgba(42,155,153,.12);  color: #085041; }
+    .bdg.scheduled { background: rgba(29,129,196,.10);  color: #0C447C; }
+    .bdg.draft     { background: rgba(97,197,221,.12);  color: var(--navy); }
+    .bdg.complete  { background: rgba(31,53,105,.08);   color: var(--navy); }
+    .bdg.new       { background: rgba(97,197,221,.15);  color: var(--navy); }
+    .bdg.inprog    { background: rgba(186,117,23,.12);  color: #633806; }
+    .bdg.done      { background: rgba(42,155,153,.15);  color: #085041; }
+
+    /* ── Rows ───────────────────────────────────────────────────────── */
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: .5px solid var(--color-border-tertiary);
+      cursor: pointer;
+    }
+    .row:last-child { border-bottom: none; }
+    .row:hover .row-name { color: var(--blue); }
+    .row-icon {
+      width: 32px; height: 32px;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .row-info  { flex: 1; min-width: 0; }
+    .row-name  { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .row-sub   { font-size: 11.5px; color: var(--color-text-secondary); }
+    .row-stats { display: flex; gap: 12px; flex-shrink: 0; }
+    .rs        { text-align: center; }
+    .rs-v      { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; }
+    .rs-l      { font-size: 10px; color: var(--color-text-tertiary); }
+
+    /* ── Progress / Bars ────────────────────────────────────────────── */
+    .prog-track {
+      height: 4px;
+      background: var(--color-border-tertiary);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 3px;
+    }
+    .prog-fill { height: 100%; border-radius: 2px; }
+    .bar-row   { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+    .bar-lbl   { font-size: 12px; color: var(--color-text-secondary); width: 90px; flex-shrink: 0; text-align: right; }
+    .bar-track { flex: 1; height: 16px; background: var(--color-background-secondary); border-radius: 3px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 3px; display: flex; align-items: center; padding-left: 6px; }
+    .bar-pct   { font-size: 10px; font-weight: 700; color: white; }
+
+    /* ── Pills ──────────────────────────────────────────────────────── */
+    .score-pill { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
+    .score-pill.A { background: rgba(42,155,153,.12); color: #085041; }
+    .score-pill.B { background: rgba(29,129,196,.10); color: #0C447C; }
+    .score-pill.C { background: rgba(186,117,23,.10); color: #633806; }
+    .score-pill.D { background: rgba(226,75,74,.10);  color: #A32D2D; }
+
+    .risk-pill { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
+    .risk-pill.high { background: rgba(226,75,74,.10); color: #A32D2D; }
+    .risk-pill.med  { background: rgba(186,117,23,.10); color: #633806; }
+    .risk-pill.low  { background: rgba(42,155,153,.10); color: #085041; }
+
+    /* ── Avatar ─────────────────────────────────────────────────────── */
+    .av { display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; border-radius: 50%; }
+
+    /* ── Template picker ────────────────────────────────────────────── */
+    .tpl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .tpl {
+      border: 1.5px solid var(--color-border-tertiary);
+      border-radius: 8px;
+      padding: 9px 11px;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+    .tpl:hover, .tpl.sel { border-color: var(--blue); background: rgba(29,129,196,.04); }
+    .tpl-title { font-size: 13px; font-weight: 600; }
+    .tpl-sub   { font-size: 11.5px; color: var(--color-text-secondary); }
+
+    .diff { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; display: inline-block; margin-top: 3px; }
+    .diff.hard { background: rgba(226,75,74,.10); color: #A32D2D; }
+    .diff.med  { background: rgba(186,117,23,.10); color: #633806; }
+    .diff.easy { background: rgba(42,155,153,.10); color: #085041; }
+
+    /* ── Email preview ──────────────────────────────────────────────── */
+    .email-preview { background: var(--color-background-secondary); border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+    .email-hdr  { padding: 8px 12px; border-bottom: .5px solid var(--color-border-tertiary); }
+    .email-fld  { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 1px; }
+    .email-fld span { color: var(--color-text-primary); font-weight: 500; }
+    .email-body { padding: 10px 12px; font-size: 12.5px; line-height: 1.6; color: var(--color-text-primary); }
+    .email-body p { margin-bottom: 6px; }
+    .email-link { color: var(--blue); text-decoration: underline; cursor: pointer; }
+    .email-sig  { font-size: 11.5px; color: var(--color-text-secondary); border-top: .5px solid var(--color-border-tertiary); padding-top: 7px; margin-top: 7px; }
+
+    /* ── Form elements ──────────────────────────────────────────────── */
+    .form-lbl { font-size: 12px; font-weight: 600; color: var(--color-text-secondary); margin-bottom: 4px; }
+    .form-row  { margin-bottom: 10px; }
+    .fi {
+      width: 100%;
+      border: .5px solid var(--color-border-secondary);
+      border-radius: 7px;
+      padding: 7px 11px;
+      font-size: 13px;
+      font-family: 'Barlow', sans-serif;
+      background: var(--color-background-primary);
+      color: var(--color-text-primary);
+      outline: none;
+    }
+    .fi:focus { border-color: var(--blue); }
+    .fsel {
+      width: 100%;
+      border: .5px solid var(--color-border-secondary);
+      border-radius: 7px;
+      padding: 7px 11px;
+      font-size: 13px;
+      font-family: 'Barlow', sans-serif;
+      background: var(--color-background-primary);
+      color: var(--color-text-primary);
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ── Wizard ─────────────────────────────────────────────────────── */
+    .wiz-steps { display: flex; margin-bottom: 1rem; }
+    .wstep { flex: 1; text-align: center; position: relative; }
+    .wstep-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      margin: 0 auto 3px;
+      border: 2px solid var(--color-border-secondary);
+    }
+    .wstep.done .wstep-num { background: var(--teal); border-color: var(--teal); color: white; }
+    .wstep.cur  .wstep-num { background: var(--blue); border-color: var(--blue); color: white; }
+    .wstep.todo .wstep-num { color: var(--color-text-tertiary); }
+    .wstep-lbl  { font-size: 11px; color: var(--color-text-secondary); }
+    .wstep.cur .wstep-lbl  { color: var(--blue); font-weight: 600; }
+    .wstep-line {
+      position: absolute;
+      top: 13px;
+      left:  calc(50% + 13px);
+      right: calc(-50% + 13px);
+      height: 2px;
+      background: var(--color-border-tertiary);
+    }
+    .wstep.done .wstep-line { background: var(--teal); }
+    .wstep:last-child .wstep-line { display: none; }
+    .wiz-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+
+    /* ── Buttons ────────────────────────────────────────────────────── */
+    .btn-sec {
+      background: var(--color-background-primary);
+      border: .5px solid var(--color-border-secondary);
+      border-radius: 7px;
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+      color: var(--color-text-primary);
+    }
+    .btn-pri {
+      background: var(--blue);
+      border: none;
+      border-radius: 7px;
+      padding: 7px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+      color: white;
+    }
+    .btn-pri:hover { background: var(--navy); }
+
+    /* ── Course cards ───────────────────────────────────────────────── */
+    .course-card {
+      background: var(--color-background-primary);
+      border: .5px solid var(--color-border-tertiary);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: border-color .15s;
+    }
+    .course-card:hover    { border-color: var(--color-border-secondary); }
+    .course-card.exp      { border-color: var(--blue); }
+    .cc-top               { display: flex; }
+    .cc-accent            { width: 4px; flex-shrink: 0; }
+    .cc-body              { flex: 1; padding: .875rem 1rem; }
+    .cc-hdr               { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
+    .cc-title             { font-size: 14px; font-weight: 600; }
+    .cc-meta              { font-size: 11.5px; color: var(--color-text-secondary); margin-bottom: 6px; }
+    .cc-desc              { font-size: 12.5px; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 8px; }
+    .cc-expand            { display: none; padding: .75rem 1rem; border-top: .5px solid var(--color-border-tertiary); }
+    .course-card.exp .cc-expand { display: block; }
+
+    .lesson-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: .5px solid var(--color-border-tertiary); }
+    .lesson-row:last-of-type { border-bottom: none; }
+    .les-icon   { width: 26px; height: 26px; border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .les-name   { flex: 1; font-size: 12.5px; font-weight: 500; }
+    .les-dur    { font-size: 11px; color: var(--color-text-tertiary); }
+    .les-status         { font-size: 11px; font-weight: 600; }
+    .les-status.done    { color: var(--teal); }
+    .les-status.next    { color: var(--blue); }
+    .start-btn {
+      margin-top: 8px;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 7px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+    }
+
+    /* ── Filter bar ─────────────────────────────────────────────────── */
+    .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+    .filt {
+      background: var(--color-background-primary);
+      border: .5px solid var(--color-border-secondary);
+      border-radius: 20px;
+      padding: 4px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+      color: var(--color-text-secondary);
+    }
+    .filt.active            { background: var(--blue); border-color: var(--blue); color: white; }
+    .filt:hover:not(.active){ border-color: var(--blue); color: var(--blue); }
+
+    /* ── Chat ───────────────────────────────────────────────────────── */
+    .chat-msgs {
+      padding: .875rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 280px;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+    .msg { display: flex; gap: 8px; align-items: flex-start; }
+    .msg.user { flex-direction: row-reverse; }
+    .msg-av {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .msg-av.bot  { background: rgba(29,129,196,.15); color: var(--blue); }
+    .msg-av.user { background: rgba(31,53,105,.12);  color: var(--navy); }
+    .bubble {
+      max-width: 84%;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .bubble.bot  { background: var(--color-background-secondary); border-bottom-left-radius: 3px; }
+    .bubble.user { background: var(--blue); color: white; border-bottom-right-radius: 3px; }
+
+    .chip-row { padding: 0 1rem .75rem; display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      background: var(--color-background-secondary);
+      border: .5px solid var(--color-border-secondary);
+      border-radius: 20px;
+      padding: 4px 11px;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+    }
+    .chip:hover { border-color: var(--blue); color: var(--blue); }
+
+    .chat-input-row {
+      padding: .75rem 1rem;
+      border-top: .5px solid var(--color-border-tertiary);
+      display: flex;
+      gap: 7px;
+    }
+    .chat-input {
+      flex: 1;
+      border: .5px solid var(--color-border-secondary);
+      border-radius: 7px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-family: 'Barlow', sans-serif;
+      background: var(--color-background-secondary);
+      color: var(--color-text-primary);
+      outline: none;
+    }
+    .chat-input:focus { border-color: var(--blue); }
+    .send-btn {
+      background: var(--blue);
+      border: none;
+      color: white;
+      border-radius: 7px;
+      width: 34px; height: 34px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Typing dots */
+    .typing { display: flex; align-items: center; gap: 3px; padding: 6px 10px; }
+    .td { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); animation: blink 1.2s infinite; }
+    .td:nth-child(2) { animation-delay: .2s; }
+    .td:nth-child(3) { animation-delay: .4s; }
+    @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+    /* ── Misc ───────────────────────────────────────────────────────── */
+    .swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    .stat-mini { background: var(--color-background-secondary); border-radius: 7px; padding: .625rem .875rem; }
+    .stat-mini-val { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; }
+    .stat-mini-lbl { font-size: 10px; color: var(--color-text-secondary); margin-top: 1px; }
+
+    .toast {
+      display: none;
+      background: var(--navy);
+      color: white;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: .875rem;
+      text-align: center;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 720px) {
+      .grid4 { grid-template-columns: 1fr 1fr; }
+      .col2, .col2r { grid-template-columns: 1fr; }
+      .nav-item { padding: 0 8px; font-size: 12px; }
+      .nav-logo-text { display: none; }
+    }
+    @media (max-width: 480px) {
+      .grid4 { grid-template-columns: 1fr; }
+      .tpl-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     NAV
+════════════════════════════════════════════════════════════════════ -->
+<nav class="nav" role="navigation" aria-label="Main navigation">
+  <a class="nav-logo" href="#" onclick="nav('dashboard', document.querySelectorAll('.nav-item')[0])" aria-label="Phishbusters home">
+    <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <circle cx="16" cy="16" r="16" fill="#1D81C4"/>
+      <path d="M10 18c0-3.31 2.69-6 6-6s6 2.69 6 6" stroke="#61C5DD" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <circle cx="16" cy="18" r="2.5" fill="#61C5DD"/>
+      <path d="M16 12V8" stroke="#61C5DD" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span class="nav-logo-text">PHISHBUSTERS</span>
+  </a>
+  <div class="nav-item active"  onclick="nav('dashboard',   this)" role="button" tabindex="0">Dashboard</div>
+  <div class="nav-item"         onclick="nav('simulations', this)" role="button" tabindex="0">Simulations</div>
+  <div class="nav-item"         onclick="nav('training',    this)" role="button" tabindex="0">Training</div>
+  <div class="nav-item"         onclick="nav('qa',          this)" role="button" tabindex="0">Ask an Expert</div>
+  <div class="nav-item"         onclick="nav('reports',     this)" role="button" tabindex="0">Reports</div>
+  <div class="nav-space"></div>
+  <button class="nav-cta" onclick="nav('simulations', document.querySelectorAll('.nav-item')[1]); setTimeout(()=>document.getElementById('wizPanel').scrollIntoView({behavior:'smooth'}),200)">
+    + New Campaign
+  </button>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     DASHBOARD
+════════════════════════════════════════════════════════════════════ -->
+<main>
+<div id="page-dashboard" class="page active">
+  <div class="ph">
+    <div class="ph-inner">
+      <div>
+        <div class="pg-label">Overview</div>
+        <div class="pg-title">Dashboard</div>
+      </div>
+      <div class="pg-tabs">
+        <div class="pg-tab active">All clients</div>
+        <div class="pg-tab">My activity</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Metric cards -->
+    <div class="grid4">
+      <div class="mcard">
+        <div class="mcard-lbl">Emails sent (Q2)</div>
+        <div class="mcard-val blue">3,841</div>
+        <div class="mcard-delta">↑ 18% vs last quarter</div>
+      </div>
+      <div class="mcard">
+        <div class="mcard-lbl">Avg click rate</div>
+        <div class="mcard-val amber">11.4%</div>
+        <div class="mcard-delta neg">↓ from 22.1% baseline</div>
+      </div>
+      <div class="mcard">
+        <div class="mcard-lbl">Training completion</div>
+        <div class="mcard-val teal">74%</div>
+        <div class="mcard-delta">↑ 6pts this period</div>
+      </div>
+      <div class="mcard">
+        <div class="mcard-lbl">Reported correctly</div>
+        <div class="mcard-val navy">34%</div>
+        <div class="mcard-delta">↑ 12pts improvement</div>
+      </div>
+    </div>
+
+    <div class="col2">
+      <!-- Left column -->
+      <div>
+        <!-- Active campaigns -->
+        <div class="panel">
+          <div class="phdr">
+            <span class="phdr-title">Active campaigns</span>
+            <button class="phdr-action" onclick="nav('simulations', document.querySelectorAll('.nav-item')[1])">View all →</button>
+          </div>
+          <div style="padding:0 1.25rem;">
+            <div class="row">
+              <div class="row-icon" style="background:rgba(42,155,153,.1);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2A9B99" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div class="row-info">
+                <div class="row-name">Q2 credential harvest — Acme Corp</div>
+                <div class="row-sub">248 recipients · IT help desk spoof</div>
+              </div>
+              <div class="row-stats">
+                <div class="rs"><div class="rs-v" style="color:#E24B4A;">14%</div><div class="rs-l">clicked</div></div>
+                <div class="rs"><div class="rs-v" style="color:#2A9B99;">41%</div><div class="rs-l">reported</div></div>
+              </div>
+              <span class="bdg active">Active</span>
+            </div>
+            <div class="row">
+              <div class="row-icon" style="background:rgba(42,155,153,.1);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2A9B99" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div class="row-info">
+                <div class="row-name">CEO gift card scam — Riverside Legal</div>
+                <div class="row-sub">92 recipients · Executive impersonation</div>
+              </div>
+              <div class="row-stats">
+                <div class="rs"><div class="rs-v" style="color:#E24B4A;">22%</div><div class="rs-l">clicked</div></div>
+                <div class="rs"><div class="rs-v" style="color:#2A9B99;">18%</div><div class="rs-l">reported</div></div>
+              </div>
+              <span class="bdg active">Active</span>
+            </div>
+            <div class="row">
+              <div class="row-icon" style="background:rgba(29,129,196,.1);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1D81C4" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <div class="row-info">
+                <div class="row-name">Fake invoice — BluePeak Dental</div>
+                <div class="row-sub">67 recipients · Scheduled May 12</div>
+              </div>
+              <div class="row-stats">
+                <div class="rs"><div class="rs-v" style="color:var(--color-text-tertiary);">—</div><div class="rs-l">clicked</div></div>
+                <div class="rs"><div class="rs-v" style="color:var(--color-text-tertiary);">—</div><div class="rs-l">reported</div></div>
+              </div>
+              <span class="bdg scheduled">Scheduled</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Click rate by dept -->
+        <div class="panel">
+          <div class="phdr"><span class="phdr-title">Click rate by department</span></div>
+          <div class="pb">
+            <div class="bar-row"><span class="bar-lbl">Finance</span>    <div class="bar-track"><div class="bar-fill" style="width:28%;background:#E24B4A;"><span class="bar-pct">28%</span></div></div></div>
+            <div class="bar-row"><span class="bar-lbl">HR</span>         <div class="bar-track"><div class="bar-fill" style="width:22%;background:#BA7517;"><span class="bar-pct">22%</span></div></div></div>
+            <div class="bar-row"><span class="bar-lbl">Operations</span> <div class="bar-track"><div class="bar-fill" style="width:18%;background:#BA7517;"><span class="bar-pct">18%</span></div></div></div>
+            <div class="bar-row"><span class="bar-lbl">Sales</span>      <div class="bar-track"><div class="bar-fill" style="width:14%;background:#1D81C4;"><span class="bar-pct">14%</span></div></div></div>
+            <div class="bar-row"><span class="bar-lbl">Marketing</span>  <div class="bar-track"><div class="bar-fill" style="width:9%; background:#2A9B99;"><span class="bar-pct">9%</span></div></div></div>
+            <div class="bar-row"><span class="bar-lbl">IT / Tech</span>  <div class="bar-track"><div class="bar-fill" style="width:4%; background:#2A9B99;"><span class="bar-pct">4%</span></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div>
+        <!-- Client scorecards -->
+        <div class="panel">
+          <div class="phdr">
+            <span class="phdr-title">Client scorecards</span>
+            <button class="phdr-action" onclick="nav('reports', document.querySelectorAll('.nav-item')[4])">Full report →</button>
+          </div>
+          <div style="padding:0 1.25rem;">
+            <div class="row"><div class="av" style="width:32px;height:32px;font-size:11px;background:rgba(42,155,153,.1);color:#085041;">AC</div><div class="row-info"><div class="row-name">Acme Corp</div><div class="row-sub">248 staff · 3 campaigns</div></div><span class="score-pill B">B+</span></div>
+            <div class="row"><div class="av" style="width:32px;height:32px;font-size:11px;background:rgba(29,129,196,.1);color:#0C447C;">RL</div><div class="row-info"><div class="row-name">Riverside Legal</div><div class="row-sub">92 staff · 2 campaigns</div></div><span class="score-pill C">C</span></div>
+            <div class="row"><div class="av" style="width:32px;height:32px;font-size:11px;background:rgba(42,155,153,.1);color:#085041;">BD</div><div class="row-info"><div class="row-name">BluePeak Dental</div><div class="row-sub">67 staff · 1 campaign</div></div><span class="score-pill A">A</span></div>
+            <div class="row"><div class="av" style="width:32px;height:32px;font-size:11px;background:rgba(186,117,23,.1);color:#633806;">SR</div><div class="row-info"><div class="row-name">Skyline Realty</div><div class="row-sub">115 staff · 1 campaign</div></div><span class="score-pill D">D</span></div>
+          </div>
+        </div>
+
+        <!-- Training progress -->
+        <div class="panel">
+          <div class="phdr">
+            <span class="phdr-title">Training progress</span>
+            <button class="phdr-action" onclick="nav('training', document.querySelectorAll('.nav-item')[2])">Go to training →</button>
+          </div>
+          <div class="pb">
+            <div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="color:var(--color-text-secondary);">Phishing basics</span><span>91%</span></div><div class="prog-track"><div class="prog-fill" style="width:91%;background:#1D81C4;"></div></div></div>
+            <div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="color:var(--color-text-secondary);">Password safety</span><span>78%</span></div><div class="prog-track"><div class="prog-fill" style="width:78%;background:#2A9B99;"></div></div></div>
+            <div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="color:var(--color-text-secondary);">AI &amp; social eng.</span><span>54%</span></div><div class="prog-track"><div class="prog-fill" style="width:54%;background:#61C5DD;"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="color:var(--color-text-secondary);">Incident response</span><span>37%</span></div><div class="prog-track"><div class="prog-fill" style="width:37%;background:#1F3569;"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /dashboard -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SIMULATIONS
+════════════════════════════════════════════════════════════════════ -->
+<div id="page-simulations" class="page">
+  <div class="ph">
+    <div class="ph-inner">
+      <div>
+        <div class="pg-label">Simulations</div>
+        <div class="pg-title">Phishing campaigns</div>
+      </div>
+      <div class="pg-tabs">
+        <div class="pg-tab active">Campaigns</div>
+        <div class="pg-tab">Templates</div>
+        <div class="pg-tab">Results</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="grid4">
+      <div class="mcard"><div class="mcard-lbl">Emails sent (Q2)</div><div class="mcard-val blue">3,841</div><div class="mcard-delta">↑ 18% vs last quarter</div></div>
+      <div class="mcard"><div class="mcard-lbl">Avg click rate</div><div class="mcard-val amber">11.4%</div><div class="mcard-delta neg">↓ from 22.1% baseline</div></div>
+      <div class="mcard"><div class="mcard-lbl">Reported as phishing</div><div class="mcard-val teal">34%</div><div class="mcard-delta">↑ 12pts improvement</div></div>
+      <div class="mcard"><div class="mcard-lbl">Active campaigns</div><div class="mcard-val navy">3</div><div class="mcard-delta">Across 4 clients</div></div>
+    </div>
+
+    <div class="col2">
+      <div>
+        <!-- All campaigns -->
+        <div class="panel">
+          <div class="phdr"><span class="phdr-title">All campaigns</span></div>
+          <div style="padding:0 1.25rem;">
+            <div class="row">
+              <div class="row-icon" style="background:rgba(42,155,153,.1);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A9B99" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+              <div class="row-info"><div class="row-name">Q2 credential harvest — Acme Corp</div><div class="row-sub">Sent May 1 · 248 recipients</div></div>
+              <div class="row-stats"><div class="rs"><div class="rs-v" style="color:#E24B4A;">14%</div><div class="rs-l">click</div></div><div class="rs"><div class="rs-v" style="color:#2A9B99;">41%</div><div class="rs-l">report</div></div></div>
+              <span class="bdg active">Active</span>
+            </div>
+            <div class="row">
+              <div class="row-icon" style="background:rgba(42,155,153,.1);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A9B99" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+              <div class="row-info"><div class="row-name">CEO gift card scam — Riverside Legal</div><div class="row-sub">Sent May 3 · 92 recipients</div></div>
+              <div class="row-stats"><div class="rs"><div class="rs-v" style="color:#E24B4A;">22%</div><div class="rs-l">click</div></div><div class="rs"><div class="rs-v" style="color:#2A9B99;">18%</div><div class="rs-l">report</div></div></div>
+              <span class="bdg active">Active</span>
+            </div>
+            <div class="row">
+              <div class="row-icon" style="background:rgba(29,129,196,.1);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1D81C4" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+              <div class="row-info"><div class="row-name">Fake invoice — BluePeak Dental</div><div class="row-sub">Scheduled May 12 · 67 recipients</div></div>
+              <div class="row-stats"><div class="rs"><div class="rs-v" style="color:var(--color-text-tertiary);">—</div><div class="rs-l">click</div></div><div class="rs"><div class="rs-v" style="color:var(--color-text-tertiary);">—</div><div class="rs-l">report</div></div></div>
+              <span class="bdg scheduled">Scheduled</span>
+            </div>
+            <div class="row">
+              <div class="row-icon" style="background:rgba(97,197,221,.12);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1D81C4" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              <div class="row-info"><div class="row-name">Password reset alert — Skyline Realty</div><div class="row-sub">Draft · 115 recipients</div></div>
+              <div class="row-stats"><div class="rs"><div class="rs-v" style="color:var(--color-text-tertiary);">—</div><div class="rs-l">click</div></div><div class="rs"><div class="rs-v" style="color:var(--color-text-tertiary);">—</div><div class="rs-l">report</div></div></div>
+              <span class="bdg draft">Draft</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- High-risk employees -->
+        <div class="panel">
+          <div class="phdr"><span class="phdr-title">High-risk employees</span><span style="font-size:11px;color:var(--color-text-tertiary);">Clicked 2+ times</span></div>
+          <div style="padding:0 1.25rem;">
+            <div class="row"><div class="av" style="width:30px;height:30px;font-size:10px;background:rgba(226,75,74,.1);color:#A32D2D;">KL</div><div class="row-info"><div class="row-name">Karen L. · Finance</div><div class="row-sub">Clicked 3×</div></div><span class="risk-pill high">High</span></div>
+            <div class="row"><div class="av" style="width:30px;height:30px;font-size:10px;background:rgba(226,75,74,.1);color:#A32D2D;">BT</div><div class="row-info"><div class="row-name">Brian T. · HR</div><div class="row-sub">Clicked 3×, submitted 1×</div></div><span class="risk-pill high">High</span></div>
+            <div class="row"><div class="av" style="width:30px;height:30px;font-size:10px;background:rgba(186,117,23,.1);color:#633806;">MO</div><div class="row-info"><div class="row-name">Maria O. · Operations</div><div class="row-sub">Clicked 2×</div></div><span class="risk-pill med">Medium</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wizard -->
+      <div>
+        <div class="panel" id="wizPanel">
+          <div class="phdr">
+            <span class="phdr-title">New campaign wizard</span>
+            <span style="font-size:12px;color:var(--color-text-secondary);" id="wiz-lbl">Step 1 of 4</span>
+          </div>
+          <div class="pb" style="background:var(--color-background-secondary);margin:.75rem;border-radius:9px;padding:.875rem;">
+            <!-- Steps indicator -->
+            <div class="wiz-steps">
+              <div class="wstep" id="ws1"><div class="wstep-num" id="wsn1">1</div><div class="wstep-lbl">Target</div><div class="wstep-line"></div></div>
+              <div class="wstep" id="ws2"><div class="wstep-num" id="wsn2">2</div><div class="wstep-lbl">Template</div><div class="wstep-line"></div></div>
+              <div class="wstep" id="ws3"><div class="wstep-num" id="wsn3">3</div><div class="wstep-lbl">Schedule</div><div class="wstep-line"></div></div>
+              <div class="wstep" id="ws4"><div class="wstep-num" id="wsn4">4</div><div class="wstep-lbl">Review</div></div>
+            </div>
+            <!-- Step 1 -->
+            <div id="wstep1">
+              <div class="form-row"><div class="form-lbl">Client</div><select class="fsel"><option>Acme Corp (248 staff)</option><option>Riverside Legal (92 staff)</option><option>BluePeak Dental (67 staff)</option><option>Skyline Realty (115 staff)</option></select></div>
+              <div class="form-row"><div class="form-lbl">Target group</div><select class="fsel"><option>All staff</option><option>Finance only</option><option>HR only</option><option>Custom CSV</option></select></div>
+              <div class="form-row" style="margin-bottom:0;"><div class="form-lbl">Campaign name</div><input class="fi" type="text" placeholder="e.g. Q2 credential harvest — Acme Corp"/></div>
+            </div>
+            <!-- Step 2 -->
+            <div id="wstep2" style="display:none;">
+              <div class="form-lbl" style="margin-bottom:7px;">Choose a phishing template</div>
+              <div class="tpl-grid">
+                <div class="tpl sel" onclick="selTpl(this)"><div class="tpl-title">IT help desk reset</div><div class="tpl-sub">Urgent password reset</div><span class="diff hard">Hard</span></div>
+                <div class="tpl" onclick="selTpl(this)"><div class="tpl-title">CEO gift card</div><div class="tpl-sub">Executive impersonation</div><span class="diff med">Medium</span></div>
+                <div class="tpl" onclick="selTpl(this)"><div class="tpl-title">Shared document</div><div class="tpl-sub">Dropbox file share</div><span class="diff easy">Easy</span></div>
+                <div class="tpl" onclick="selTpl(this)"><div class="tpl-title">Vendor invoice</div><div class="tpl-sub">Supplier payment request</div><span class="diff hard">Hard</span></div>
+              </div>
+              <div class="email-preview">
+                <div class="email-hdr">
+                  <div class="email-fld"><b>From:</b> <span>it-support@acme-helpdesk.net</span></div>
+                  <div class="email-fld"><b>Subject:</b> <span>Action required: your password expires today</span></div>
+                </div>
+                <div class="email-body">
+                  <p>Hi [First Name],</p>
+                  <p>Your company password expires at <strong>11:59 PM tonight</strong>. Click below to reset it now.</p>
+                  <p><span class="email-link">Reset my password →</span></p>
+                  <div class="email-sig">IT Help Desk · Acme Corp</div>
+                </div>
+              </div>
+            </div>
+            <!-- Step 3 -->
+            <div id="wstep3" style="display:none;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="form-row" style="margin:0;"><div class="form-lbl">Send date</div><input class="fi" type="date"/></div>
+                <div class="form-row" style="margin:0;"><div class="form-lbl">Send time</div><select class="fsel"><option>9:00 AM</option><option>2:00 PM</option><option>Random</option></select></div>
+              </div>
+              <div class="form-row" style="margin-top:10px;"><div class="form-lbl">Auto-enroll clickers in</div><select class="fsel"><option>Phishing fundamentals</option><option>AI risks track</option><option>No auto-enrollment</option></select></div>
+              <div class="form-row" style="margin-bottom:0;"><div class="form-lbl">Show teachable moment page?</div><select class="fsel"><option>Yes — explain the simulation</option><option>No — silent campaign</option></select></div>
+            </div>
+            <!-- Step 4 -->
+            <div id="wstep4" style="display:none;">
+              <div style="background:var(--color-background-primary);border-radius:7px;padding:.875rem;display:flex;flex-direction:column;gap:7px;font-size:13px;">
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-secondary);">Client</span><span style="font-weight:600;">Acme Corp</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-secondary);">Target</span><span style="font-weight:600;">All staff (248)</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-secondary);">Template</span><span style="font-weight:600;">IT help desk reset</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-secondary);">Send date</span><span style="font-weight:600;">May 14 · Random time</span></div>
+                <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-secondary);">Auto-enroll</span><span style="font-weight:600;">Yes — Phishing fundamentals</span></div>
+              </div>
+            </div>
+            <!-- Buttons -->
+            <div class="wiz-btns">
+              <button class="btn-sec" id="wiz-back" onclick="wizBack()" style="display:none;">Back</button>
+              <button class="btn-pri" id="wiz-next" onclick="wizNext()">Next: Template</button>
+            </div>
+          </div>
+          <div class="toast" id="wiz-toast"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /simulations -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     TRAINING
+════════════════════════════════════════════════════════════════════ -->
+<div id="page-training" class="page">
+  <div class="ph">
+    <div class="ph-inner">
+      <div>
+        <div class="pg-label">Learning Library</div>
+        <div class="pg-title">Training courses</div>
+      </div>
+      <div class="pg-tabs">
+        <div class="pg-tab active">All courses</div>
+        <div class="pg-tab">My progress</div>
+        <div class="pg-tab">Assigned</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="filter-bar" id="trainFilters">
+      <button class="filt active"    onclick="setTF('all',this)">All topics</button>
+      <button class="filt"           onclick="setTF('phishing',this)">Phishing</button>
+      <button class="filt"           onclick="setTF('ai',this)">AI risks</button>
+      <button class="filt"           onclick="setTF('passwords',this)">Passwords</button>
+      <button class="filt"           onclick="setTF('compliance',this)">Compliance</button>
+      <button class="filt"           onclick="setTF('incident',this)">Incident response</button>
+    </div>
+
+    <div class="col2">
+      <div id="courseList">
+        <!-- Course 1 -->
+        <div class="course-card" data-tags="phishing" onclick="togCC(this)">
+          <div class="cc-top"><div class="cc-accent" style="background:#1D81C4;"></div>
+          <div class="cc-body">
+            <div class="cc-hdr"><div class="cc-title">Phishing awareness fundamentals</div><div style="display:flex;gap:5px;flex-shrink:0;"><span class="bdg done">Completed</span></div></div>
+            <div class="cc-meta">5 lessons · 42 min · Beginner</div>
+            <div class="cc-desc">Learn to recognize and report phishing — the most common entry point for cyberattacks.</div>
+            <div class="prog-track"><div class="prog-fill" style="width:100%;background:#2A9B99;"></div></div>
+          </div></div>
+          <div class="cc-expand">
+            <div style="font-size:12px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;padding:.75rem 0 .5rem;">Lessons</div>
+            <div class="lesson-row"><div class="les-icon" style="background:rgba(42,155,153,.12);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2A9B99" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div><div class="les-name">What is phishing?</div><div class="les-dur">8 min</div><span class="les-status done">Done</span></div>
+            <div class="lesson-row"><div class="les-icon" style="background:rgba(42,155,153,.12);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2A9B99" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div><div class="les-name">Spotting red flags</div><div class="les-dur">10 min</div><span class="les-status done">Done</span></div>
+            <div class="lesson-row"><div class="les-icon" style="background:rgba(42,155,153,.12);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2A9B99" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div><div class="les-name">Spear phishing &amp; whaling</div><div class="les-dur">7 min</div><span class="les-status done">Done</span></div>
+            <div class="lesson-row"><div class="les-icon" style="background:rgba(42,155,153,.12);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2A9B99" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div><div class="les-name">How to report suspicious emails</div><div class="les-dur">9 min</div><span class="les-status done">Done</span></div>
+            <button class="start-btn" style="background:#2A9B99;">View certificate</button>
+          </div>
+        </div>
+
+        <!-- Course 2 -->
+        <div class="course-card" data-tags="ai phishing" onclick="togCC(this)">
+          <div class="cc-top"><div class="cc-accent" style="background:#2A9B99;"></div>
+          <div class="cc-body">
+            <div class="cc-hdr"><div class="cc-title">AI-powered threats &amp; deepfake attacks</div><div style="display:flex;gap:5px;flex-shrink:0;"><span class="bdg inprog">In progress</span></div></div>
+            <div class="cc-meta">6 lessons · 55 min · Intermediate</div>
+            <div class="cc-desc">How attackers use AI to write phishing emails, clone voices, and create deepfake videos.</div>
+            <div class="prog-track"><div class="prog-fill" style="width:50%;background:#1D81C4;"></div></div>
+          </div></div>
+          <div class="cc-expand">
+            <div style="font-size:12px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;padding:.75rem 0 .5rem;">Lessons</div>
+            <div class="lesson-row"><div class="les-icon" style="background:rgba(42,155,153,.12);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2A9B99" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div><div class="les-name">How LLMs write phishing emails</div><div class="les-dur">11 min</div><span class="les-status done">Done</span></div>
+            <div class="lesson-row"><div class="les-icon" style="background:rgba(42,155,153,.12);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2A9B99" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div><div class="les-name">Voice cloning &amp; phone scams</div><div class="les-dur">9 min</div><span class="les-status done">Done</span></div>
+            <div class="lesson-row"><div class="les-icon" style="background:rgba(29,129,196,.12);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1D81C4" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="les-name">Defending against AI social engineering</div><div class="les-dur">12 min</div><span class="les-status next">Up next</span></div>
+            <div class="lesson-row"><div class="les-icon" style="background:var(--color-background-secondary);"></div><div class="les-name">AI risk policy</div><div class="les-dur">10 min</div><span class="les-status" style="color:var(--color-text-tertiary);">Locked</span></div>
+            <button class="start-btn">Continue course</button>
+          </div>
+        </div>
+
+        <!-- Course 3 -->
+        <div class="course-card" data-tags="passwords" onclick="togCC(this)">
+          <div class="cc-top"><div class="cc-accent" style="background:#61C5DD;"></div>
+          <div class="cc-body">
+            <div class="cc-hdr"><div class="cc-title">Password hygiene &amp; credential security</div></div>
+            <div class="cc-meta">4 lessons · 30 min · Beginner</div>
+            <div class="cc-desc">Strong passwords, password managers, credential stuffing, and MFA basics.</div>
+            <div class="prog-track"><div class="prog-fill" style="width:0%;background:#61C5DD;"></div></div>
+          </div></div>
+          <div class="cc-expand">
+            <div style="font-size:12px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;padding:.75rem 0 .5rem;">Lessons</div>
+            <div class="lesson-row"><div class="les-icon" style="background:rgba(29,129,196,.12);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1D81C4" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="les-name">Why passwords fail</div><div class="les-dur">7 min</div><span class="les-status next">Start</span></div>
+            <div class="lesson-row"><div class="les-icon" style="background:var(--color-background-secondary);"></div><div class="les-name">Building strong passwords</div><div class="les-dur">8 min</div><span class="les-status" style="color:var(--color-text-tertiary);">Locked</span></div>
+            <div class="lesson-row"><div class="les-icon" style="background:var(--color-background-secondary);"></div><div class="les-name">Using a password manager</div><div class="les-dur">9 min</div><span class="les-status" style="color:var(--color-text-tertiary);">Locked</span></div>
+            <button class="start-btn">Start course</button>
+          </div>
+        </div>
+
+        <!-- Course 4 -->
+        <div class="course-card" data-tags="incident" onclick="togCC(this)">
+          <div class="cc-top"><div class="cc-accent" style="background:#1F3569;"></div>
+          <div class="cc-body">
+            <div class="cc-hdr"><div class="cc-title">Incident response for non-IT staff</div><div style="display:flex;gap:5px;flex-shrink:0;"><span class="bdg new">New</span></div></div>
+            <div class="cc-meta">5 lessons · 38 min · Intermediate</div>
+            <div class="cc-desc">What to do — and not do — when you suspect a breach.</div>
+            <div class="prog-track"><div class="prog-fill" style="width:0%;background:#1F3569;"></div></div>
+          </div></div>
+          <div class="cc-expand">
+            <div style="font-size:12px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;padding:.75rem 0 .5rem;">Lessons</div>
+            <div class="lesson-row"><div class="les-icon" style="background:rgba(29,129,196,.12);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1D81C4" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="les-name">Recognize a potential incident</div><div class="les-dur">8 min</div><span class="les-status next">Start</span></div>
+            <div class="lesson-row"><div class="les-icon" style="background:var(--color-background-secondary);"></div><div class="les-name">Who to call &amp; what to say</div><div class="les-dur">7 min</div><span class="les-status" style="color:var(--color-text-tertiary);">Locked</span></div>
+            <button class="start-btn">Start course</button>
+          </div>
+        </div>
+
+        <!-- Course 5 -->
+        <div class="course-card" data-tags="compliance" onclick="togCC(this)">
+          <div class="cc-top"><div class="cc-accent" style="background:#2A9B99;"></div>
+          <div class="cc-body">
+            <div class="cc-hdr"><div class="cc-title">GRC basics: compliance for everyone</div></div>
+            <div class="cc-meta">4 lessons · 35 min · Beginner</div>
+            <div class="cc-desc">HIPAA, SOC 2, GDPR in plain language — what they mean for your daily work.</div>
+            <div class="prog-track"><div class="prog-fill" style="width:25%;background:#2A9B99;"></div></div>
+          </div></div>
+          <div class="cc-expand">
+            <div style="font-size:12px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;padding:.75rem 0 .5rem;">Lessons</div>
+            <div class="lesson-row"><div class="les-icon" style="background:rgba(42,155,153,.12);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2A9B99" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div><div class="les-name">What is GRC and why it matters</div><div class="les-dur">8 min</div><span class="les-status done">Done</span></div>
+            <div class="lesson-row"><div class="les-icon" style="background:rgba(29,129,196,.12);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1D81C4" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="les-name">Key regulations: HIPAA, SOC 2, GDPR</div><div class="les-dur">10 min</div><span class="les-status next">Up next</span></div>
+            <button class="start-btn">Continue course</button>
+          </div>
+        </div>
+      </div><!-- /courseList -->
+
+      <!-- Right sidebar -->
+      <div>
+        <div class="panel">
+          <div class="phdr"><span class="phdr-title">My progress</span></div>
+          <div class="pb">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:.875rem;">
+              <div class="av" style="width:40px;height:40px;font-size:13px;background:rgba(29,129,196,.12);color:#1D81C4;">JD</div>
+              <div><div style="font-size:14px;font-weight:600;">Jamie Doe</div><div style="font-size:12px;color:var(--color-text-secondary);">Acme Corp · Staff</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:.875rem;">
+              <div class="stat-mini"><div class="stat-mini-val" style="color:#1D81C4;">2</div><div class="stat-mini-lbl">Done</div></div>
+              <div class="stat-mini"><div class="stat-mini-val" style="color:#2A9B99;">1</div><div class="stat-mini-lbl">In progress</div></div>
+              <div class="stat-mini"><div class="stat-mini-val" style="color:#1F3569;">2</div><div class="stat-mini-lbl">To start</div></div>
+            </div>
+            <div style="background:rgba(42,155,153,.08);border:.5px solid rgba(42,155,153,.25);border-radius:7px;padding:.625rem .875rem;display:flex;align-items:center;gap:8px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:#2A9B99;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <div style="font-size:12px;color:#085041;font-weight:500;line-height:1.4;">Certificate earned: Phishing awareness fundamentals</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="phdr"><span class="phdr-title">Topic tracks</span></div>
+          <div style="padding:0 1.25rem;">
+            <div class="row" onclick="setTF('phishing',document.querySelectorAll('.filt')[1])"><div style="width:10px;height:10px;border-radius:2px;background:#1D81C4;flex-shrink:0;"></div><div class="row-info"><div class="row-name">Phishing</div></div><span style="font-size:12px;color:var(--color-text-secondary);">3 courses</span></div>
+            <div class="row" onclick="setTF('ai',document.querySelectorAll('.filt')[2])"><div style="width:10px;height:10px;border-radius:2px;background:#2A9B99;flex-shrink:0;"></div><div class="row-info"><div class="row-name">AI risks</div></div><span style="font-size:12px;color:var(--color-text-secondary);">2 courses</span></div>
+            <div class="row" onclick="setTF('passwords',document.querySelectorAll('.filt')[3])"><div style="width:10px;height:10px;border-radius:2px;background:#61C5DD;flex-shrink:0;"></div><div class="row-info"><div class="row-name">Passwords &amp; MFA</div></div><span style="font-size:12px;color:var(--color-text-secondary);">2 courses</span></div>
+            <div class="row" onclick="setTF('compliance',document.querySelectorAll('.filt')[4])"><div style="width:10px;height:10px;border-radius:2px;background:#2A9B99;flex-shrink:0;"></div><div class="row-info"><div class="row-name">Compliance / GRC</div></div><span style="font-size:12px;color:var(--color-text-secondary);">3 courses</span></div>
+            <div class="row" onclick="setTF('incident',document.querySelectorAll('.filt')[5])"><div style="width:10px;height:10px;border-radius:2px;background:#1F3569;flex-shrink:0;"></div><div class="row-info"><div class="row-name">Incident response</div></div><span style="font-size:12px;color:var(--color-text-secondary);">2 courses</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /training -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     Q&A
+════════════════════════════════════════════════════════════════════ -->
+<div id="page-qa" class="page">
+  <div class="ph">
+    <div class="ph-inner">
+      <div>
+        <div class="pg-label">Q&amp;A Assistant</div>
+        <div class="pg-title">Ask an Expert</div>
+      </div>
+      <div class="pg-tabs">
+        <div class="pg-tab active">Live chat</div>
+        <div class="pg-tab">Question log</div>
+        <div class="pg-tab">Escalations</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="col2r">
+      <div>
+        <div class="panel">
+          <!-- Chat header -->
+          <div style="background:#1D81C4;padding:.75rem 1rem;display:flex;align-items:center;gap:10px;">
+            <div class="av" style="width:34px;height:34px;font-size:12px;background:rgba(255,255,255,.2);color:white;">PB</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:700;color:white;">Phishbusters Expert Bot</div>
+              <div style="font-size:11.5px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:5px;">
+                <span style="width:6px;height:6px;border-radius:50%;background:#61C5DD;display:inline-block;"></span>Online · AI-powered
+              </div>
+            </div>
+            <button onclick="qaEscalate()" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:5px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif;">Escalate</button>
+          </div>
+          <!-- Messages -->
+          <div class="chat-msgs" id="chatMsgs" role="log" aria-live="polite">
+            <div class="msg">
+              <div class="msg-av bot">PB</div>
+              <div><div class="bubble bot">Hi! I'm the Phishbusters Expert Bot. Ask me anything about cybersecurity — phishing, passwords, MFA, AI risks, and more.</div></div>
+            </div>
+          </div>
+          <!-- Quick chips -->
+          <div class="chip-row" id="chips">
+            <div class="chip" onclick="askChip('How do I spot a phishing email?')">How do I spot phishing?</div>
+            <div class="chip" onclick="askChip('What makes a strong password?')">Strong passwords</div>
+            <div class="chip" onclick="askChip('What is multi-factor authentication?')">What is MFA?</div>
+            <div class="chip" onclick="askChip('How can AI be used to create phishing attacks?')">AI &amp; phishing</div>
+          </div>
+          <!-- Input -->
+          <div class="chat-input-row">
+            <input class="chat-input" id="chatInput" type="text" placeholder="Ask a cybersecurity question…" onkeydown="if(event.key==='Enter')sendQA()" aria-label="Your question"/>
+            <button class="send-btn" onclick="sendQA()" aria-label="Send">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <div class="phdr"><span class="phdr-title">This month — Acme Corp</span></div>
+          <div class="pb" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div class="stat-mini"><div class="stat-mini-val" style="color:#1D81C4;">247</div><div class="stat-mini-lbl">Questions asked</div></div>
+            <div class="stat-mini"><div class="stat-mini-val" style="color:#2A9B99;">94%</div><div class="stat-mini-lbl">AI resolved</div></div>
+            <div class="stat-mini"><div class="stat-mini-val" style="color:#1F3569;">16</div><div class="stat-mini-lbl">Escalated</div></div>
+            <div class="stat-mini"><div class="stat-mini-val" style="color:#61C5DD;">1.2s</div><div class="stat-mini-lbl">Avg response</div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="phdr"><span class="phdr-title">Top topics</span></div>
+          <div class="pb">
+            <div class="bar-row"><span class="bar-lbl" style="width:80px;">Phishing</span>  <div class="bar-track"><div class="bar-fill" style="width:82%;background:#1D81C4;"><span class="bar-pct">82%</span></div></div></div>
+            <div class="bar-row"><span class="bar-lbl" style="width:80px;">Passwords</span> <div class="bar-track"><div class="bar-fill" style="width:61%;background:#2A9B99;"><span class="bar-pct">61%</span></div></div></div>
+            <div class="bar-row"><span class="bar-lbl" style="width:80px;">AI risks</span>  <div class="bar-track"><div class="bar-fill" style="width:48%;background:#61C5DD;"><span class="bar-pct">48%</span></div></div></div>
+            <div class="bar-row"><span class="bar-lbl" style="width:80px;">MFA / 2FA</span> <div class="bar-track"><div class="bar-fill" style="width:37%;background:#1F3569;"><span class="bar-pct">37%</span></div></div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="phdr"><span class="phdr-title">Escalation queue</span><span class="bdg" style="background:rgba(226,75,74,.1);color:#A32D2D;font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;">2 open</span></div>
+          <div style="padding:0 1.25rem;">
+            <div class="row"><div class="av" style="width:28px;height:28px;font-size:10px;background:rgba(29,129,196,.1);color:#0C447C;">JM</div><div class="row-info"><div class="row-name">Jamie M.</div><div class="row-sub">Suspicious invoice from CFO</div></div><span class="bdg" style="background:rgba(186,117,23,.1);color:#633806;font-size:10px;">Open</span></div>
+            <div class="row"><div class="av" style="width:28px;height:28px;font-size:10px;background:rgba(29,129,196,.1);color:#0C447C;">TR</div><div class="row-info"><div class="row-name">Taylor R.</div><div class="row-sub">Clicked a link — am I at risk?</div></div><span class="bdg" style="background:rgba(186,117,23,.1);color:#633806;font-size:10px;">Open</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /qa -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     REPORTS
+════════════════════════════════════════════════════════════════════ -->
+<div id="page-reports" class="page">
+  <div class="ph">
+    <div class="ph-inner">
+      <div>
+        <div class="pg-label">Reports &amp; Export</div>
+        <div class="pg-title">Analytics &amp; reporting</div>
+      </div>
+      <div class="pg-tabs">
+        <div class="pg-tab active">Overview</div>
+        <div class="pg-tab">Client reports</div>
+        <div class="pg-tab">Export center</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;">
+      <select class="fsel" id="repClient" style="width:auto;" onchange="updRep()" aria-label="Select client">
+        <option value="all">All clients</option>
+        <option value="acme">Acme Corp</option>
+        <option value="riverside">Riverside Legal</option>
+        <option value="bluepeak">BluePeak Dental</option>
+        <option value="skyline">Skyline Realty</option>
+      </select>
+      <select class="fsel" style="width:auto;" aria-label="Select period"><option>Q2 2026</option><option>Q1 2026</option><option>Last 6 months</option></select>
+      <div style="flex:1;"></div>
+      <button class="btn-sec" onclick="repToast('PDF report downloading...')">Export PDF</button>
+      <button class="btn-sec" onclick="repToast('CSV export ready.')">Download CSV</button>
+      <button class="btn-pri" onclick="repToast('Report sent to client contact!')">Send to client</button>
+    </div>
+
+    <div class="grid4" id="repMetrics">
+      <div class="mcard"><div class="mcard-lbl">Emails sent</div><div class="mcard-val blue" id="rm1">3,841</div><div class="mcard-delta">↑ 18% vs last quarter</div></div>
+      <div class="mcard"><div class="mcard-lbl">Avg click rate</div><div class="mcard-val amber" id="rm2">11.4%</div><div class="mcard-delta neg">↓ from 22.1% baseline</div></div>
+      <div class="mcard"><div class="mcard-lbl">Training completion</div><div class="mcard-val teal" id="rm3">74%</div><div class="mcard-delta">↑ 6pts this period</div></div>
+      <div class="mcard"><div class="mcard-lbl">Reported correctly</div><div class="mcard-val navy" id="rm4">34%</div><div class="mcard-delta">↑ 12pts improvement</div></div>
+    </div>
+
+    <div class="col2">
+      <div>
+        <!-- Chart -->
+        <div class="panel">
+          <div class="phdr">
+            <span class="phdr-title">Click rate trend</span>
+            <span id="repChartSub" style="font-size:12px;color:var(--color-text-secondary);">All clients · Q2 2026</span>
+          </div>
+          <div class="pb">
+            <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;">
+              <span style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--color-text-secondary);"><span class="swatch" style="background:#1D81C4;"></span>Click rate</span>
+              <span style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--color-text-secondary);"><span class="swatch" style="background:#2A9B99;"></span>Report rate</span>
+            </div>
+            <div style="position:relative;width:100%;height:200px;">
+              <canvas id="repChart" role="img" aria-label="Line chart of click rate and report rate over time">Click rate declining, report rate improving.</canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Training by topic -->
+        <div class="panel">
+          <div class="phdr"><span class="phdr-title">Training completion by topic</span></div>
+          <div class="pb">
+            <div class="bar-row"><span class="bar-lbl" style="width:100px;">Phishing basics</span>  <div class="bar-track"><div class="bar-fill" style="width:91%;background:#1D81C4;"><span class="bar-pct">91%</span></div></div></div>
+            <div class="bar-row"><span class="bar-lbl" style="width:100px;">Password hygiene</span> <div class="bar-track"><div class="bar-fill" style="width:78%;background:#1D81C4;"><span class="bar-pct">78%</span></div></div></div>
+            <div class="bar-row"><span class="bar-lbl" style="width:100px;">AI &amp; social eng.</span><div class="bar-track"><div class="bar-fill" style="width:54%;background:#2A9B99;"><span class="bar-pct">54%</span></div></div></div>
+            <div class="bar-row"><span class="bar-lbl" style="width:100px;">GRC / Compliance</span> <div class="bar-track"><div class="bar-fill" style="width:62%;background:#2A9B99;"><span class="bar-pct">62%</span></div></div></div>
+            <div class="bar-row" style="margin-bottom:0;"><span class="bar-lbl" style="width:100px;">Incident response</span><div class="bar-track"><div class="bar-fill" style="width:37%;background:#61C5DD;"><span class="bar-pct">37%</span></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <!-- Client scorecards -->
+        <div class="panel">
+          <div class="phdr"><span class="phdr-title">Client scorecards</span></div>
+          <div style="padding:0 1.25rem;">
+            <div class="row"><div class="av" style="width:32px;height:32px;font-size:11px;background:rgba(42,155,153,.1);color:#085041;">AC</div><div class="row-info"><div class="row-name">Acme Corp</div><div class="row-sub">14% click · 74% trained</div></div><span class="score-pill B">B+</span></div>
+            <div class="row"><div class="av" style="width:32px;height:32px;font-size:11px;background:rgba(29,129,196,.1);color:#0C447C;">RL</div><div class="row-info"><div class="row-name">Riverside Legal</div><div class="row-sub">22% click · 51% trained</div></div><span class="score-pill C">C</span></div>
+            <div class="row"><div class="av" style="width:32px;height:32px;font-size:11px;background:rgba(42,155,153,.1);color:#085041;">BD</div><div class="row-info"><div class="row-name">BluePeak Dental</div><div class="row-sub">7% click · 88% trained</div></div><span class="score-pill A">A</span></div>
+            <div class="row"><div class="av" style="width:32px;height:32px;font-size:11px;background:rgba(186,117,23,.1);color:#633806;">SR</div><div class="row-info"><div class="row-name">Skyline Realty</div><div class="row-sub">29% click · 43% trained</div></div><span class="score-pill D">D</span></div>
+          </div>
+        </div>
+
+        <!-- Export center -->
+        <div class="panel">
+          <div class="phdr"><span class="phdr-title">Export center</span></div>
+          <div style="padding:0 1.25rem;">
+            <div class="row" onclick="repToast('Executive summary PDF downloading...')">
+              <div class="row-icon" style="background:rgba(29,129,196,.1);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1D81C4" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="row-info"><div class="row-name">Executive summary</div><div class="row-sub">Branded PDF for client leadership</div></div>
+              <span style="font-size:12px;font-weight:600;color:#1D81C4;">PDF</span>
+            </div>
+            <div class="row" onclick="repToast('Campaign CSV preparing...')">
+              <div class="row-icon" style="background:rgba(42,155,153,.1);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2A9B99" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+              <div class="row-info"><div class="row-name">Campaign data</div><div class="row-sub">Raw per-employee click data</div></div>
+              <span style="font-size:12px;font-weight:600;color:#2A9B99;">CSV</span>
+            </div>
+            <div class="row" onclick="repToast('Training progress CSV ready...')">
+              <div class="row-icon" style="background:rgba(97,197,221,.12);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1D81C4" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+              <div class="row-info"><div class="row-name">Training progress</div><div class="row-sub">Completion rates per user</div></div>
+              <span style="font-size:12px;font-weight:600;color:#1D81C4;">CSV</span>
+            </div>
+            <div class="row" onclick="repToast('Risk register PDF generated...')">
+              <div class="row-icon" style="background:rgba(226,75,74,.08);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A32D2D" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+              <div class="row-info"><div class="row-name">Risk register</div><div class="row-sub">High-risk employee list</div></div>
+              <span style="font-size:12px;font-weight:600;color:#A32D2D;">PDF</span>
+            </div>
+          </div>
+        </div>
+        <div id="repToastEl" class="toast"></div>
+      </div>
+    </div>
+  </div>
+</div><!-- /reports -->
+</main>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════════════ -->
+<script>
+/* ── Navigation ─────────────────────────────────────────────────────── */
+function nav(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (el) el.classList.add('active');
+  if (page === 'reports') setTimeout(buildRepChart, 100);
+}
+
+/* Keyboard accessibility for nav items */
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') item.click(); });
+});
+
+/* ── Campaign Wizard ────────────────────────────────────────────────── */
+let wizStep = 1;
+const wizSteps = ['Next: Template', 'Next: Schedule', 'Next: Review &amp; launch', 'Launch campaign'];
+
+function wizUpdate() {
+  for (let i = 1; i <= 4; i++) {
+    const s   = document.getElementById('wstep' + i);
+    const ws  = document.getElementById('ws' + i);
+    const wsn = document.getElementById('wsn' + i);
+    if (s)   s.style.display  = (i === wizStep) ? '' : 'none';
+    if (ws)  ws.className     = 'wstep ' + (i < wizStep ? 'done' : i === wizStep ? 'cur' : 'todo');
+    if (wsn) wsn.innerHTML    = i < wizStep
+      ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>'
+      : i;
+  }
+  document.getElementById('wiz-lbl').textContent = 'Step ' + wizStep + ' of 4';
+  document.getElementById('wiz-back').style.display = wizStep > 1 ? '' : 'none';
+  const nb = document.getElementById('wiz-next');
+  nb.textContent  = wizSteps[wizStep - 1] || 'Launch';
+  nb.style.background = wizStep === 4 ? '#2A9B99' : '#1D81C4';
+}
+
+function wizNext() {
+  if (wizStep < 4) {
+    wizStep++;
+    wizUpdate();
+  } else {
+    const t = document.getElementById('wiz-toast');
+    t.textContent = 'Campaign launched! Emails will send on the scheduled date.';
+    t.style.display = 'block';
+    document.getElementById('wiz-next').textContent   = 'Launched!';
+    document.getElementById('wiz-next').style.background = '#2A9B99';
+    document.getElementById('wiz-next').disabled = true;
+    setTimeout(() => t.style.display = 'none', 4000);
+  }
+}
+
+function wizBack() {
+  if (wizStep > 1) { wizStep--; wizUpdate(); }
+}
+
+function selTpl(el) {
+  document.querySelectorAll('.tpl').forEach(t => t.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+wizUpdate();
+
+/* ── Training filters ───────────────────────────────────────────────── */
+let trainFilter = 'all';
+
+function setTF(tag, btn) {
+  trainFilter = tag;
+  document.querySelectorAll('#trainFilters .filt').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.querySelectorAll('#courseList .course-card').forEach(c => {
+    const tags = c.dataset.tags || '';
+    c.style.display = (tag === 'all' || tags.includes(tag)) ? '' : 'none';
+  });
+}
+
+function togCC(card) {
+  const was = card.classList.contains('exp');
+  document.querySelectorAll('.course-card').forEach(c => c.classList.remove('exp'));
+  if (!was) card.classList.add('exp');
+}
+
+/* ── Q&A Chat ───────────────────────────────────────────────────────── */
+const qaAnswers = {
+  phishing: 'Look for these red flags: mismatched sender domains, urgent language pressuring you to act, generic greetings like "Dear Customer", and unusual links. Hover over links before clicking to see the real URL. When in doubt — don\'t click, and contact the sender directly.',
+  password: 'Use at least 16 characters mixing uppercase, lowercase, numbers, and symbols. Each site needs a unique password. The easiest approach: use a password manager like Bitwarden or 1Password to generate and store them securely.',
+  mfa:      'Multi-factor authentication adds a second verification step — like a code from an authenticator app — on top of your password. Even if someone steals your password, they still can\'t log in without that second factor. Use an authenticator app over SMS when possible.',
+  ai:       'AI has made phishing far more dangerous. Attackers use LLMs to write flawless, personalized emails — no more broken English. They also clone voices for phone scams and create deepfake videos. Slow down, verify requests through a second channel, and treat urgency as a red flag.',
+  default:  'Great question. The short answer: always verify before you click or share. If something feels off — an unexpected request, urgent language, or an unusual sender — pause and verify through a known channel. Your instincts are a powerful security tool.'
+};
+
+function getQAReply(q) {
+  q = q.toLowerCase();
+  if (q.includes('phish') || q.includes('email') || q.includes('spot') || q.includes('flag')) return qaAnswers.phishing;
+  if (q.includes('password') || q.includes('strong'))                                          return qaAnswers.password;
+  if (q.includes('mfa') || q.includes('multi') || q.includes('authenticat') || q.includes('2fa')) return qaAnswers.mfa;
+  if (q.includes('ai') || q.includes('deep') || q.includes('artificial'))                     return qaAnswers.ai;
+  return qaAnswers.default;
+}
+
+function addQAMsg(text, type) {
+  const box = document.getElementById('chatMsgs');
+  const d   = document.createElement('div');
+  d.className = 'msg ' + type;
+  d.innerHTML = `<div class="msg-av ${type}">${type === 'user' ? 'You' : 'PB'}</div><div class="bubble ${type}">${text}</div>`;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+
+function addTyping() {
+  const box = document.getElementById('chatMsgs');
+  const d   = document.createElement('div');
+  d.className = 'msg';
+  d.id        = 'typing';
+  d.innerHTML = '<div class="msg-av bot">PB</div><div class="bubble bot"><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>';
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+
+function sendQA() {
+  const inp = document.getElementById('chatInput');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = '';
+  document.getElementById('chips').style.display = 'none';
+  addQAMsg(txt, 'user');
+  addTyping();
+  setTimeout(() => {
+    const t = document.getElementById('typing');
+    if (t) t.remove();
+    addQAMsg(getQAReply(txt), 'bot');
+  }, 1100);
+}
+
+function askChip(txt) {
+  document.getElementById('chatInput').value = txt;
+  sendQA();
+}
+
+function qaEscalate() {
+  const box = document.getElementById('chatMsgs');
+  const d   = document.createElement('div');
+  d.style.cssText = 'text-align:center;padding:6px 0;';
+  d.innerHTML = '<span style="font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);padding:4px 13px;border-radius:20px;border:.5px solid var(--color-border-tertiary);">Escalated to the Phishbusters team — you\'ll hear back shortly.</span>';
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+
+/* ── Reports chart ──────────────────────────────────────────────────── */
+const repData = {
+  all:       { s:'3,841', c:'11.4%', t:'74%', r:'34%', label:'All clients',      clicks:[22,20,18,16,14,12,11], reports:[8,10,13,18,24,30,34] },
+  acme:      { s:'1,241', c:'14%',   t:'74%', r:'41%', label:'Acme Corp',         clicks:[31,26,22,18,16,14,14], reports:[12,16,22,28,33,38,41] },
+  riverside: { s:'462',   c:'22%',   t:'51%', r:'18%', label:'Riverside Legal',   clicks:[28,26,25,24,23,22,22], reports:[5,7,9,12,15,17,18] },
+  bluepeak:  { s:'312',   c:'7%',    t:'88%', r:'52%', label:'BluePeak Dental',   clicks:[18,14,11,9,8,7,7],     reports:[10,18,26,35,42,48,52] },
+  skyline:   { s:'542',   c:'29%',   t:'43%', r:'22%', label:'Skyline Realty',    clicks:[32,31,30,30,29,29,29], reports:[8,10,13,16,19,21,22] }
+};
+let repChart = null;
+
+function updRep() {
+  const key = document.getElementById('repClient').value;
+  const d   = repData[key];
+  document.getElementById('rm1').textContent       = d.s;
+  document.getElementById('rm2').textContent       = d.c;
+  document.getElementById('rm3').textContent       = d.t;
+  document.getElementById('rm4').textContent       = d.r;
+  document.getElementById('repChartSub').textContent = d.label + ' · Q2 2026';
+  buildRepChart();
+}
+
+function buildRepChart() {
+  const key = document.getElementById('repClient').value;
+  const d   = repData[key];
+  const ctx = document.getElementById('repChart').getContext('2d');
+  if (repChart) repChart.destroy();
+  repChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Nov','Dec','Jan','Feb','Mar','Apr','May'],
+      datasets: [
+        {
+          label: 'Click rate',
+          data: d.clicks,
+          borderColor: '#1D81C4',
+          backgroundColor: 'rgba(29,129,196,.07)',
+          borderWidth: 2,
+          pointBackgroundColor: '#1D81C4',
+          pointRadius: 3,
+          fill: true,
+          tension: .35
+        },
+        {
+          label: 'Report rate',
+          data: d.reports,
+          borderColor: '#2A9B99',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointBackgroundColor: '#2A9B99',
+          pointRadius: 3,
+          tension: .35
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ctx.dataset.label + ': ' + Math.round(ctx.parsed.y) + '%'
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid:  { color: 'rgba(128,128,128,.1)' },
+          ticks: { color: '#888', font: { size: 11 }, autoSkip: false }
+        },
+        y: {
+          grid:  { color: 'rgba(128,128,128,.1)' },
+          ticks: { color: '#888', font: { size: 11 }, callback: v => v + '%' },
+          min: 0,
+          max: 60
+        }
+      }
+    }
+  });
+}
+
+function repToast(msg) {
+  const t = document.getElementById('repToastEl');
+  t.textContent   = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3500);
+}
+
+document.getElementById('repClient').addEventListener('change', updRep);
+</script>
+
+</body>
+</html>

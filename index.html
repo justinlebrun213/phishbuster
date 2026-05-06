@@ -568,10 +568,10 @@
      NAV
 ════════════════════════════════════════════════════════════════════ -->
 <nav class="nav" role="navigation" aria-label="Main navigation">
-  <a class="nav-logo" href="#" onclick="nav('dashboard', document.querySelectorAll('.nav-item')[0])" aria-label="Phishbusters home">
-<img src="logo.png" alt="Phishbusters logo" height="36" />
-    <span class="nav-logo-text">PHISHBUSTERS</span>
-  </a>
+ <a class="nav-logo" href="#" onclick="nav('dashboard', document.querySelectorAll('.nav-item')[0])" aria-label="Phishbusters home" style="flex-direction:column; gap:2px; margin-right:2rem;">
+    <img src="logo.png" alt="Phishbusters logo" height="52" />
+    <span class="nav-logo-text" style="font-size:11px; letter-spacing:2px;">PHISHBUSTERS</span>
+</a>
   <div class="nav-item active"  onclick="nav('dashboard',   this)" role="button" tabindex="0">Dashboard</div>
   <div class="nav-item"         onclick="nav('simulations', this)" role="button" tabindex="0">Simulations</div>
   <div class="nav-item"         onclick="nav('training',    this)" role="button" tabindex="0">Training</div>
